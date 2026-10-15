@@ -15,6 +15,7 @@ declare global {
 
   type Prefs = {
     leadMinutes: number
+    reminderMinutes: number[]
     messageTemplate: string
     soundEnabled: boolean
     staySignedIn: boolean

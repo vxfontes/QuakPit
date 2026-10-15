@@ -85,7 +85,7 @@ export function registerIpc(): void {
 
   ipcMain.handle('events:upcoming', async () => {
     try {
-      return await calendar.listUpcoming(120)
+      return await calendar.listToday()
     } catch {
       return []
     }

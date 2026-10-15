@@ -1,5 +1,5 @@
 import { getPrefs } from './store'
-import { listUpcoming, type UpcomingEvent } from './calendar'
+import { listToday, type UpcomingEvent } from './calendar'
 import { flyAcross } from './windows/overlay'
 
 let pollTimer: NodeJS.Timeout | null = null
@@ -31,7 +31,7 @@ export function getUpcoming(): UpcomingEvent[] {
 
 async function refresh(): Promise<void> {
   try {
-    upcoming = await listUpcoming(60)
+    upcoming = await listToday()
     // Forget fired markers for events that are no longer upcoming. Event ids can
     // themselves contain ':' (e.g. "ical:abc"), so match by id prefix, not split.
     const idList = upcoming.map((e) => e.id)
@@ -46,22 +46,26 @@ async function refresh(): Promise<void> {
 function tick(): void {
   const prefs = getPrefs()
   const now = Date.now()
-  const lead = prefs.leadMinutes * 60_000
+  const reminders = [...new Set(prefs.reminderMinutes)]
+    .filter((minutes) => Number.isInteger(minutes) && minutes > 0 && minutes <= 24 * 60)
+    .sort((a, b) => b - a)
   // A second fly-by right at the meeting's start time (free).
   const flyAtStart = prefs.flyAtStart
 
   for (const ev of upcoming) {
-    // 1) The lead-time reminder (e.g. "Call with Jack in 5 minutes").
-    const triggerAt = ev.start - lead
-    const leadKey = `${ev.id}:${prefs.leadMinutes}`
-    const leadDue = now >= triggerAt && now < triggerAt + FIRE_WINDOW_MS
-    if (leadDue && ev.start > now && !fired.has(leadKey)) {
-      fired.add(leadKey)
-      const minutes = Math.max(1, Math.round((ev.start - now) / 60_000))
-      const message = prefs.messageTemplate
-        .replaceAll('{title}', ev.title)
-        .replaceAll('{minutes}', String(minutes))
-      flyAcross({ message, durationMs: 9000, sound: prefs.soundEnabled })
+    // Each configured offset gets one independent fly-by for this event.
+    for (const leadMinutes of reminders) {
+      const triggerAt = ev.start - leadMinutes * 60_000
+      const leadKey = `${ev.id}:${leadMinutes}`
+      const leadDue = now >= triggerAt && now < triggerAt + FIRE_WINDOW_MS
+      if (leadDue && ev.start > now && !fired.has(leadKey)) {
+        fired.add(leadKey)
+        const minutes = Math.max(1, Math.round((ev.start - now) / 60_000))
+        const message = prefs.messageTemplate
+          .replaceAll('{title}', ev.title)
+          .replaceAll('{minutes}', String(minutes))
+        flyAcross({ message, durationMs: 9000, sound: prefs.soundEnabled })
+      }
     }
 
     // 2) Optional second fly-by right at the start time ("… starting now").

@@ -69,8 +69,10 @@ function setupChoices(id: string, onPick: (value: string) => void): {
     }
   }
 }
-const leadChoices = setupChoices('lead', (v) => void q.setPrefs({ leadMinutes: Number(v) }))
 const speedChoices = setupChoices('speed', (v) => void q.setPrefs({ speed: v as Prefs['speed'] }))
+const reminderList = $('reminder-list')
+const reminderMinutes = $<HTMLInputElement>('reminder-minutes')
+const reminderAdd = $<HTMLButtonElement>('reminder-add')
 
 const headsEl = $('heads')
 const colorsEl = $('colors')
@@ -130,6 +132,7 @@ let tryHead: string | null = null
 let tryColor: string | null = null
 let prefs: Prefs = {
   leadMinutes: 5,
+  reminderMinutes: [5],
   messageTemplate: '{title} in {minutes} minutes',
   soundEnabled: true,
   staySignedIn: true,
@@ -149,7 +152,7 @@ let prefs: Prefs = {
 // ---- General -------------------------------------------------------------
 function fillPrefs(p: Prefs): void {
   prefs = p
-  leadChoices.set(String(p.leadMinutes))
+  renderReminders()
   template.value = p.messageTemplate
   displaySel.value = p.targetDisplay
   sound.checked = p.soundEnabled
@@ -166,6 +169,40 @@ function fillPrefs(p: Prefs): void {
   renderSounds()
   renderPreview()
 }
+
+function renderReminders(): void {
+  reminderList.innerHTML = ''
+  for (const minutes of [...new Set(prefs.reminderMinutes)].sort((a, b) => b - a)) {
+    const row = document.createElement('span')
+    row.className = 'reminder-chip'
+    row.textContent = `${minutes} min before`
+    const remove = document.createElement('button')
+    remove.type = 'button'
+    remove.textContent = '×'
+    remove.setAttribute('aria-label', `Remove ${minutes}-minute reminder`)
+    remove.addEventListener('click', () => {
+      prefs.reminderMinutes = prefs.reminderMinutes.filter((value) => value !== minutes)
+      void q.setPrefs({ reminderMinutes: prefs.reminderMinutes })
+      renderReminders()
+    })
+    row.append(remove)
+    reminderList.append(row)
+  }
+}
+
+function addReminder(): void {
+  const minutes = Number(reminderMinutes.value)
+  if (!Number.isInteger(minutes) || minutes < 1 || minutes > 24 * 60) return
+  if (!prefs.reminderMinutes.includes(minutes)) prefs.reminderMinutes.push(minutes)
+  prefs.reminderMinutes.sort((a, b) => b - a)
+  void q.setPrefs({ reminderMinutes: prefs.reminderMinutes })
+  reminderMinutes.value = ''
+  renderReminders()
+}
+reminderAdd.addEventListener('click', addReminder)
+reminderMinutes.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') addReminder()
+})
 template.addEventListener('change', () => void q.setPrefs({ messageTemplate: template.value }))
 displaySel.addEventListener('change', () =>
   void q.setPrefs({ targetDisplay: displaySel.value as Prefs['targetDisplay'] })
@@ -451,7 +488,7 @@ function renderUpcoming(events: UpcomingEvent[], connected: boolean): void {
     const li = document.createElement('li')
     li.className = 'up-empty'
     li.textContent = connected
-      ? 'No meetings in the next couple of hours.'
+      ? 'No events left today.'
       : 'Connect a calendar to see your meetings.'
     upcomingList.append(li)
     return

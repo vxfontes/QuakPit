@@ -5,6 +5,7 @@ import { join } from 'node:path'
 /** Non-personal preferences only — no calendar data ever lives here. */
 export type Prefs = {
   leadMinutes: number
+  reminderMinutes: number[]
   messageTemplate: string
   soundEnabled: boolean
   staySignedIn: boolean
@@ -24,6 +25,7 @@ export type Prefs = {
 
 const DEFAULT_PREFS: Prefs = {
   leadMinutes: 5,
+  reminderMinutes: [5],
   messageTemplate: '{title} in {minutes} minutes',
   soundEnabled: true,
   staySignedIn: true,
