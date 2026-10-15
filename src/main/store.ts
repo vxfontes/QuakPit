@@ -17,6 +17,7 @@ export type Prefs = {
   // --- Pro ---
   speed: 'normal' | 'fast' | 'ultra' // how fast the rig crosses the screen
   flyAtStart: boolean // a second fly-by at the meeting's start time (free)
+  showTodaySchedule: boolean // preview the full local calendar day instead of next two hours
   soundPack: string // which signature sound plays mid-flight
   flierHead: string // character head id
   flierColor: string // plane colour id
@@ -36,6 +37,7 @@ const DEFAULT_PREFS: Prefs = {
   font: 'system',
   speed: 'normal',
   flyAtStart: false,
+  showTodaySchedule: false,
   soundPack: 'quack',
   flierHead: 'duck',
   flierColor: 'red',

@@ -39,6 +39,7 @@ const sound = $<HTMLInputElement>('sound')
 const login = $<HTMLInputElement>('login')
 const stay = $<HTMLInputElement>('stay')
 const flyAtStart = $<HTMLInputElement>('flyatstart')
+const showToday = $<HTMLInputElement>('show-today')
 const proBanner = $('pro-banner')
 const calFreeNote = $('cal-free-note')
 calFreeNote.addEventListener('click', () => showTab('pro'))
@@ -95,6 +96,7 @@ const pickIcalStatus = $('pick-ical-status')
 const pickIcloudStatus = $('pick-icloud-status')
 const upcomingList = $<HTMLUListElement>('upcoming')
 const upcomingRefresh = $<HTMLButtonElement>('upcoming-refresh')
+const agendaTitle = $('agenda-title')
 // iCal-link wizard
 const icalUrl = $<HTMLInputElement>('ical-url')
 const icalName = $<HTMLInputElement>('ical-name')
@@ -143,6 +145,7 @@ let prefs: Prefs = {
   font: 'system',
   speed: 'normal',
   flyAtStart: false,
+  showTodaySchedule: false,
   soundPack: 'quack',
   flierHead: 'duck',
   flierColor: 'red',
@@ -160,6 +163,8 @@ function fillPrefs(p: Prefs): void {
   stay.checked = p.staySignedIn
   speedChoices.set(p.speed)
   flyAtStart.checked = p.flyAtStart
+  showToday.checked = p.showTodaySchedule
+  agendaTitle.textContent = p.showTodaySchedule ? 'Today’s schedule' : 'Next up'
   tryHead = null
   tryColor = null
   renderHeads()
@@ -211,6 +216,12 @@ sound.addEventListener('change', () => void q.setPrefs({ soundEnabled: sound.che
 login.addEventListener('change', () => void q.setPrefs({ launchAtLogin: login.checked }))
 stay.addEventListener('change', () => void q.setPrefs({ staySignedIn: stay.checked }))
 flyAtStart.addEventListener('change', () => void q.setPrefs({ flyAtStart: flyAtStart.checked }))
+showToday.addEventListener('change', async () => {
+  prefs.showTodaySchedule = showToday.checked
+  agendaTitle.textContent = prefs.showTodaySchedule ? 'Today’s schedule' : 'Next up'
+  await q.setPrefs({ showTodaySchedule: prefs.showTodaySchedule })
+  await refreshCalendar()
+})
 proBanner.addEventListener('click', () => showTab('pro'))
 
 // Banner-message token tags: insert {title} / {minutes} at the cursor.
@@ -488,7 +499,9 @@ function renderUpcoming(events: UpcomingEvent[], connected: boolean): void {
     const li = document.createElement('li')
     li.className = 'up-empty'
     li.textContent = connected
-      ? 'No events left today.'
+      ? prefs.showTodaySchedule
+        ? 'No events today.'
+        : 'No meetings in the next couple of hours.'
       : 'Connect a calendar to see your meetings.'
     upcomingList.append(li)
     return

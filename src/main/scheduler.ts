@@ -1,5 +1,5 @@
 import { getPrefs } from './store'
-import { listToday, type UpcomingEvent } from './calendar'
+import { listUpcoming, type UpcomingEvent } from './calendar'
 import { flyAcross } from './windows/overlay'
 
 let pollTimer: NodeJS.Timeout | null = null
@@ -31,7 +31,7 @@ export function getUpcoming(): UpcomingEvent[] {
 
 async function refresh(): Promise<void> {
   try {
-    upcoming = await listToday()
+    upcoming = await listUpcoming(60)
     // Forget fired markers for events that are no longer upcoming. Event ids can
     // themselves contain ':' (e.g. "ical:abc"), so match by id prefix, not split.
     const idList = upcoming.map((e) => e.id)
