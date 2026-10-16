@@ -39,6 +39,7 @@ const sound = $<HTMLInputElement>('sound')
 const login = $<HTMLInputElement>('login')
 const stay = $<HTMLInputElement>('stay')
 const flyAtStart = $<HTMLInputElement>('flyatstart')
+const presentationMode = $<HTMLInputElement>('presentation-mode')
 const showToday = $<HTMLInputElement>('show-today')
 const proBanner = $('pro-banner')
 const calFreeNote = $('cal-free-note')
@@ -145,6 +146,7 @@ let prefs: Prefs = {
   font: 'system',
   speed: 'normal',
   flyAtStart: false,
+  presentationMode: false,
   showTodaySchedule: false,
   soundPack: 'quack',
   flierHead: 'duck',
@@ -163,6 +165,7 @@ function fillPrefs(p: Prefs): void {
   stay.checked = p.staySignedIn
   speedChoices.set(p.speed)
   flyAtStart.checked = p.flyAtStart
+  presentationMode.checked = p.presentationMode
   showToday.checked = p.showTodaySchedule
   agendaTitle.textContent = p.showTodaySchedule ? 'Today’s schedule' : 'Next up'
   tryHead = null
@@ -216,6 +219,9 @@ sound.addEventListener('change', () => void q.setPrefs({ soundEnabled: sound.che
 login.addEventListener('change', () => void q.setPrefs({ launchAtLogin: login.checked }))
 stay.addEventListener('change', () => void q.setPrefs({ staySignedIn: stay.checked }))
 flyAtStart.addEventListener('change', () => void q.setPrefs({ flyAtStart: flyAtStart.checked }))
+presentationMode.addEventListener('change', () =>
+  void q.setPrefs({ presentationMode: presentationMode.checked })
+)
 showToday.addEventListener('change', async () => {
   prefs.showTodaySchedule = showToday.checked
   agendaTitle.textContent = prefs.showTodaySchedule ? 'Today’s schedule' : 'Next up'

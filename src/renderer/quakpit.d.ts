@@ -26,6 +26,7 @@ declare global {
     font: string
     speed: 'normal' | 'fast' | 'ultra'
     flyAtStart: boolean
+    presentationMode: boolean
     showTodaySchedule: boolean
     soundPack: string
     flierHead: string

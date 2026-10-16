@@ -45,6 +45,7 @@ async function refresh(): Promise<void> {
 
 function tick(): void {
   const prefs = getPrefs()
+  if (prefs.presentationMode) return
   const now = Date.now()
   const reminders = [...new Set(prefs.reminderMinutes)]
     .filter((minutes) => Number.isInteger(minutes) && minutes > 0 && minutes <= 24 * 60)
