@@ -29,7 +29,7 @@ export function createTray(
       { label: 'Open Quakpit', click: onSettings },
       { label: 'Send a test flight  (⌘⇧D)', click: onTestFlight },
       {
-        label: 'Presentation mode — pause reminders  (⌘⇧P)',
+        label: 'Pause reminders  (⌘⇧P)',
         type: 'checkbox',
         checked: getPrefs().presentationMode,
         click: onTogglePresentation
