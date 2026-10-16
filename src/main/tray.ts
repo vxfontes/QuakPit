@@ -10,9 +10,12 @@ export function createTray(
   onSettings: () => void,
   onTogglePresentation: () => void
 ): Tray {
-  // createFromPath automatically picks up the @2x variant when present.
+  // Tray icons must be real files: nativeImage cannot read assets inside app.asar.
+  const iconPath = app.isPackaged
+    ? join(process.resourcesPath, 'tray-iconTemplate.png')
+    : join(app.getAppPath(), 'build', 'iconTemplate.png')
   let image = nativeImage.createFromPath(
-    join(app.getAppPath(), 'build', 'iconTemplate.png')
+    iconPath
   )
   if (image.isEmpty()) {
     image = nativeImage.createEmpty()
