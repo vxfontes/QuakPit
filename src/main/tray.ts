@@ -24,19 +24,27 @@ export function createTray(
 
   tray = new Tray(image)
   tray.setToolTip('Quakpit')
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
+
+  const updateMenu = (): void => {
+    tray?.setContextMenu(
+      Menu.buildFromTemplate([
       { label: 'Open Quakpit', click: onSettings },
       { label: 'Send a test flight  (⌘⇧D)', click: onTestFlight },
       {
         label: 'Pause reminders  (⌘⇧P)',
         type: 'checkbox',
         checked: getPrefs().presentationMode,
-        click: onTogglePresentation
+        click: () => {
+          onTogglePresentation()
+          updateMenu()
+        }
       },
       { type: 'separator' },
       { label: 'Quit Quakpit', click: () => app.quit() }
-    ])
-  )
+      ])
+    )
+  }
+
+  updateMenu()
   return tray
 }
